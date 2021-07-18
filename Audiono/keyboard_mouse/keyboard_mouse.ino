@@ -15,13 +15,11 @@
 #define RIGHT KEY_RIGHT_ARROW
 #define JUMP  32
 
-#define PRESS_M  press_key('M');delay(100);release_key('M');delay(100)
+#define PRESS_M  press_key('m');delay(100);release_key('m');delay(100)
 
 //#define MOUSE_L 12
 #define LEFT_SINGLE_CLICK Mouse.click()
 #define LEFT_DOUBLE_CLICK LEFT_SINGLE_CLICK;delay(100);LEFT_SINGLE_CLICK
-
-//#define MOUSE_R 13
 
 #define LEFT_JUMP   100
 #define RIGHT_JUMP  99
@@ -186,6 +184,14 @@ void loop(){
       delay(500);
       press_release_key(KEY_RETURN, 1000);
       Serial.print("L");
+    }
+    else if( serial_data == 'r'){
+      press_key(KEY_LEFT_ALT);
+      press_key('r');
+      delay(200);
+      Keyboard.releaseAll();
+      delay(500);
+      Serial.print("r");
     }
   }
   

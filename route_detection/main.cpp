@@ -112,6 +112,30 @@ void min_window(HWND hwnd) {
 	left_single_click(window_x + 913, window_y + 14);
 }
 
+void return_city() {
+	char buf[2];
+	sprintf_s(buf, 2, "%c", 'r');
+	arduino->writeSerialPort(buf, 1);
+
+	do {
+		wait_for_serial_response();
+	} while (strcmp(incomingData, "r") != 0);
+
+	Sleep(500);
+}
+
+void hide_people() {
+	char buf[2];
+	sprintf_s(buf, 2, "%c", 'h');
+	arduino->writeSerialPort(buf, 1);
+
+	do {
+		wait_for_serial_response();
+	} while (strcmp(incomingData, "h") != 0);
+
+	Sleep(500);
+}
+
 bool read_qq_pwds() {
 	string line;
 	ifstream myfile(QQ_PWD_TXT);
@@ -163,14 +187,14 @@ int main() {
 		if (choice == 0) {
 
 			int run_times = 0;
-			bool just_once = 0, already_inside = 0;
+			bool stay_inside = 0, already_inside = 0;
 
 			cout << "关闭输入法!!!!" << endl;
 			cout << "Enter run times: " << endl;
 			cin >> run_times;
 			if (run_times == 1) {
 				cout << "待在里面吗? " << endl;
-				cin >> just_once;
+				cin >> stay_inside;
 				cout << "已经在里面了吗? " << endl;
 				cin >> already_inside;
 			}
@@ -295,7 +319,7 @@ int main() {
 					printf("Answer question.\n");
 					answer_question(rand() % 4, window_x, window_y);
 
-					if (!just_once) {
+					if (!stay_inside) {
 						printf("Talk to XJS.\n");
 						talk_to_NPC_XJS(window_x, window_y);
 
@@ -304,13 +328,7 @@ int main() {
 						printf("Close dialog.\n");
 						close_dialog(window_x, window_y);
 
-						char buf[2];
-						sprintf_s(buf, 2, "%c", 'h');
-						arduino->writeSerialPort(buf, 1);
-
-						do {
-							wait_for_serial_response();
-						} while (strcmp(incomingData, "h") != 0);
+						hide_people();
 					}
 					
 
@@ -443,6 +461,13 @@ int main() {
 
 		if (choice == 2) {
 
+			bool need_to_return = 0, need_to_hide = 0;
+
+			cout << "要回城吗? " << endl;
+			cin >> need_to_return;
+			cout << "要隐藏人物吗? " << endl;
+			cin >> need_to_hide;
+
 			// Get all color window
 			search_color_screens();
 
@@ -450,6 +475,43 @@ int main() {
 			for (int i = 0; i < number_of_screens; i++) {
 				min_window(color_screen_windows[i]);
 			}
+
+			if (need_to_return) {
+				int initial_time = time(NULL);
+				for (int i = 0; i < number_of_screens; i++) {
+					// restore window
+					PostMessage(color_screen_windows[i], WM_SYSCOMMAND, SC_RESTORE, 0);
+					Sleep(1000);
+					SetForegroundWindow(color_screen_windows[i]);
+					Sleep(1000);
+
+					curr_game_window = color_screen_windows[i];
+					return_city();
+					if (need_to_hide) {
+						hide_people();
+					}
+
+					open_map();
+
+					RECT rect;
+					int window_x, window_y;
+					GetWindowRect(color_screen_windows[i], &rect);
+					window_x = rect.left;
+					window_y = rect.top;
+					left_double_click(window_x + 404, window_y + 353);
+
+					close_map();
+					
+					min_window(color_screen_windows[i]);
+				}
+				int current_time = time(NULL);
+				if (current_time - initial_time <= 30) {
+					cout << "Waiting for 30 sec. Remaining: " << (30 + initial_time - current_time) << endl;
+					Sleep((30 + initial_time - current_time) * 1000);
+				}
+
+			}
+
 
 			// clear last finish time
 			for (int i = 0; i < number_of_screens; i++) {
