@@ -361,6 +361,9 @@ int main() {
 								second_chance = 1;
 							}
 						}
+						else if (second_chance) {
+							second_chance = 0;
+						}
 					} while (second_chance);
 
 					if (!route_success) {
