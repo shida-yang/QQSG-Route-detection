@@ -352,11 +352,12 @@ int main() {
 								return_to_left();
 								//exit
 								exit_XJ();
-								//come in again
-								talk_to_NPC_SC(1, window_x, window_y);
 								Sleep(2000);
 								hide_people();
 								Sleep(4000);
+								//come in again
+								talk_to_NPC_SC(1, window_x, window_y);
+								
 								second_chance = 1;
 							}
 						}
