@@ -124,6 +124,42 @@ void return_city() {
 	Sleep(500);
 }
 
+void return_to_left() {
+	char buf[2];
+	sprintf_s(buf, 2, "%c", 'l');
+	arduino->writeSerialPort(buf, 1);
+
+	do {
+		wait_for_serial_response();
+	} while (strcmp(incomingData, "l") != 0);
+
+	Sleep(500);
+}
+
+void press_enter() {
+	char buf[2];
+	sprintf_s(buf, 2, "%c", 'e');
+	arduino->writeSerialPort(buf, 1);
+
+	do {
+		wait_for_serial_response();
+	} while (strcmp(incomingData, "e") != 0);
+
+	Sleep(500);
+}
+
+void exit_XJ() {
+	char buf[2];
+	sprintf_s(buf, 2, "%c", 'g');
+	arduino->writeSerialPort(buf, 1);
+
+	do {
+		wait_for_serial_response();
+	} while (strcmp(incomingData, "g") != 0);
+	press_enter();
+	press_enter();
+}
+
 void hide_people() {
 	char buf[2];
 	sprintf_s(buf, 2, "%c", 'h');
@@ -239,6 +275,8 @@ int main() {
 					SetForegroundWindow(color_screen_windows[i]);
 					Sleep(1000);
 
+					bool second_chance = false;
+
 					curr_game_window = color_screen_windows[i];
 
 					RECT rect;
@@ -261,49 +299,70 @@ int main() {
 						Sleep(2000);
 					}
 
-					int route = detect_route(color_screen_windows[i]);
+					bool route_success = true;
 
-					cout << "route detected: " << route << endl;
+					do {
+						int route = detect_route(color_screen_windows[i]);
 
-					int route1 = detect_route(color_screen_windows[i]);
+						cout << "route detected: " << route << endl;
 
-					cout << "route detected: " << route1 << endl;
+						int route1 = detect_route(color_screen_windows[i]);
 
-					while (route1 != route) {
-						route = route1;
-						route1 = detect_route(color_screen_windows[i]);
 						cout << "route detected: " << route1 << endl;
-					}
 
-					set_route(route);
+						while (route1 != route) {
+							route = route1;
+							route1 = detect_route(color_screen_windows[i]);
+							cout << "route detected: " << route1 << endl;
+						}
 
-					start_running();
+						set_route(route);
 
-					wait_for_running_finish();
+						start_running();
 
-					int check_success_color = get_pixel_color(window_x + 543, window_y + 627);
-					int curr_color = check_success_color - 1;
-					Sleep(500);
-					
-					while (curr_color != check_success_color) {
-						check_success_color = curr_color;
-						curr_color = get_pixel_color(window_x + 543, window_y + 627);
+						wait_for_running_finish();
+
+						int check_success_color = get_pixel_color(window_x + 543, window_y + 627);
+						int curr_color = check_success_color - 1;
 						Sleep(500);
-					}
 
-					if (check_success_color != 4413) {	// D3D9=4413, OpenGL=???
-						route_failed[i] = 1;
+						while (curr_color != check_success_color) {
+							check_success_color = curr_color;
+							curr_color = get_pixel_color(window_x + 543, window_y + 627);
+							Sleep(500);
+						}
 
-						my_time = time(NULL);
+						if (check_success_color != 4413) {	// D3D9=4413, OpenGL=???
+							if (second_chance) {
+								route_failed[i] = 1;
 
-						struct tm* tmp = localtime(&my_time);
+								my_time = time(NULL);
 
-						printf("[%02d:%02d:%02d] Route failed.\n", tmp->tm_hour, tmp->tm_min, tmp->tm_sec);
+								struct tm* tmp = localtime(&my_time);
 
-						min_window(color_screen_windows[i]);
-						//PostMessage(color_screen_windows[i], WM_SYSCOMMAND, SC_MINIMIZE, 0);
-						//Sleep(1000);
+								printf("[%02d:%02d:%02d] Route failed.\n", tmp->tm_hour, tmp->tm_min, tmp->tm_sec);
 
+								min_window(color_screen_windows[i]);
+								//PostMessage(color_screen_windows[i], WM_SYSCOMMAND, SC_MINIMIZE, 0);
+								//Sleep(1000);
+								route_success = false;
+								break;
+							}
+							else {
+								return_to_left();
+								//exit
+								exit_XJ();
+								//come in again
+								talk_to_NPC_SC(1, window_x, window_y);
+								Sleep(2000);
+								hide_people();
+								Sleep(4000);
+								second_chance = 1;
+							}
+						}
+					} while (second_chance);
+
+					if (!route_success) {
 						continue;
 					}
 					

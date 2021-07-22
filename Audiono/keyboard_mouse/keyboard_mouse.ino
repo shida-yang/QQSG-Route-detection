@@ -136,22 +136,24 @@ void loop(){
     }
     //talk
     else if ( serial_data == 'g' ){
-      press_release_key('G', 1000);
+      press_release_key('g', 1000);
       Serial.print("g");
     }
     //官爵对话
     else if ( serial_data == 't' ){
-      press_release_key('G', 1000);
+      press_release_key('g', 1000);
       press_release_key(KEY_RETURN, 1000);
       press_release_key(KEY_RETURN, 1000);
       press_release_key(KEY_RETURN, 1000);
       Serial.print("t");
     }
+    //隐藏人物
     else if ( serial_data == 'h' ) {
       press_release_key(KEY_F11, 500);
       press_release_key(KEY_F11, 500);
       Serial.print("h");
     }
+    //读取qq和密码
     else if ( serial_data == 'L' ) {
       Serial.print("L");
       String qq = "";
@@ -185,6 +187,7 @@ void loop(){
       press_release_key(KEY_RETURN, 1000);
       Serial.print("L");
     }
+    //回城
     else if( serial_data == 'r'){
       press_key(KEY_LEFT_ALT);
       press_key('r');
@@ -192,6 +195,18 @@ void loop(){
       Keyboard.releaseAll();
       delay(500);
       Serial.print("r");
+    }
+    //到最左边
+    else if( serial_data == 'l'){
+      press_key(LEFT);
+      delay(30000);
+      release_key(LEFT);
+      Serial.print("l");
+    }
+    //按回车
+    else if ( serial_data == 'e' ){
+      press_release_key(KEY_RETURN, 1000);
+      Serial.print("e");
     }
   }
   
